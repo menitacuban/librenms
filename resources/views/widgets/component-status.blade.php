@@ -1,4 +1,4 @@
-<div>
+<div class="lnms-component-status">
     <table id="component-status" class="table table-hover table-condensed table-striped">
         <thead>
         <tr>
@@ -9,8 +9,8 @@
         <tbody>
         @foreach($status as $item)
             <tr>
-                <td><p class="text-left {{ $item['color'] }}">{{ $item['text'] }}</p></td>
-                <td><p class="text-left {{ $item['color'] }}">{{ $item['total'] }}</p></td>
+                <td><span class="text-left {{ $item['color'] }}">{{ $item['text'] }}</span></td>
+                <td><span class="text-left {{ $item['color'] }}">{{ $item['total'] }}</span></td>
             </tr>
         @endforeach
         </tbody>

@@ -41,8 +41,9 @@ class NotesController extends WidgetController
     {
         $settings = $this->getSettings();
 
-        if (is_null($settings['notes'])) {
-            return $this->getSettingsView($request);
+        // Empty / whitespace: quiet Configure empty state (settings stay behind gear / Configure).
+        if ($settings['notes'] === null || trim((string) $settings['notes']) === '') {
+            return $this->needsConfigurationView(__('No notes yet. Configure this widget to add content.'));
         }
 
         $purifier_config = [
@@ -53,6 +54,8 @@ class NotesController extends WidgetController
         ];
         $output = \LibreNMS\Util\Clean::html(nl2br($settings['notes']), $purifier_config);
 
-        return $output;
+        return view('widgets.notes', [
+            'notesHtml' => $output,
+        ]);
     }
 }

@@ -58,29 +58,19 @@ class HealthSensorsController extends WidgetController
         $scope = (string) ($settings['device_scope'] ?? 'device');
 
         if ($scope === 'device' && empty($settings['device'])) {
-            return $this->getSettingsView($request);
+            return $this->needsConfigurationView(__('Select a device to display health sensors.'));
         }
 
         if ($scope === 'device_group' && empty($settings['device_group'])) {
-            return view('widgets.health-sensors', [
-                'id' => $settings['id'],
-                'error' => __('Please select a device group.'),
-                'sensors' => collect(),
-                'display_mode' => $settings['display_mode'],
-                'cols' => (int) $settings['cols'],
-            ]);
+            return $this->needsConfigurationView(__('Select a device group to display health sensors.'));
         }
 
         if ($scope === 'device_regex') {
             $deviceRegex = trim((string) ($settings['device_regex'] ?? '.*'));
             if ($deviceRegex === '') {
-                return view('widgets.health-sensors', [
-                    'id' => $settings['id'],
-                    'error' => __('Please enter a device match regex (hostname or sysName).'),
-                    'sensors' => collect(),
-                    'display_mode' => $settings['display_mode'],
-                    'cols' => (int) $settings['cols'],
-                ]);
+                return $this->needsConfigurationView(
+                    __('Enter a device match regex to display health sensors.')
+                );
             }
         }
 
@@ -138,6 +128,12 @@ class HealthSensorsController extends WidgetController
                 'sensors' => collect(),
                 'display_mode' => $settings['display_mode'],
             ]);
+        }
+
+        if ($sensors->isEmpty()) {
+            return $this->needsConfigurationView(
+                __('No health sensors matched the current filters.')
+            );
         }
 
         return view('widgets.health-sensors', [

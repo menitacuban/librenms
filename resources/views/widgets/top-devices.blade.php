@@ -1,3 +1,4 @@
+<div class="lnms-top-devices">
 @if($rows->isNotEmpty())
 <div class="table-responsive">
     <table class="table table-hover table-condensed table-striped bootgrid-table">
@@ -21,5 +22,9 @@
     </table>
 </div>
 @else
-    <h4>{{ __('No devices found within interval.') }}</h4>
+    {{-- Controller normally returns needs-config; keep quiet empty if view is hit directly --}}
+    <div class="lnms-widget-needs-config" data-widget-type="top-devices">
+        <p class="lnms-widget-needs-config__msg">{{ __('No devices found within interval.') }}</p>
+    </div>
 @endif
+</div>

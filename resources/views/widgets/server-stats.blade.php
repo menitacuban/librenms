@@ -1,3 +1,4 @@
+<div class="lnms-server-stats">
 <div class="tw:grid {{ $gridCols ?? 'tw:grid-cols-3' }} tw:gap-2 tw:h-full tw:w-full tw:items-stretch tw:overflow-y-auto" style="grid-template-rows: repeat({{ $gridRows ?? 1 }}, minmax(65px, 1fr));">
     @if($showCpu ?? true)
         <div class="tw:flex tw:flex-col tw:items-center tw:justify-center tw:w-full tw:h-full tw:min-h-0">
@@ -94,3 +95,4 @@
         fill: #9ca3af !important;
     }
 </style>
+</div>
