@@ -4306,6 +4306,105 @@ nav.navbar.lnms-nav .badge-navbar-user.badge-default {
     }
 }
 
+/* Device detail → Graphs tab (legacy graphs.inc.php host) */
+.lnms-device-graphs {
+    clear: both;
+    font-family: var(--lnms-font-sans);
+    color: var(--lnms-text);
+}
+
+.lnms-device-graphs > .panel.panel-default {
+    background-color: var(--lnms-surface);
+    border: 1px solid var(--lnms-border);
+    border-radius: var(--lnms-radius-md);
+    box-shadow: none;
+    margin-bottom: var(--lnms-space-3);
+    overflow: hidden;
+}
+
+.lnms-device-graphs > .panel.panel-default > .panel-heading {
+    background-color: var(--lnms-surface-muted);
+    border-bottom: 1px solid var(--lnms-border);
+    color: var(--lnms-text);
+    padding: var(--lnms-space-2) var(--lnms-space-3);
+    font-size: var(--lnms-text-sm);
+    line-height: 1.5;
+}
+
+/* Section optionbar (first panel) */
+.lnms-device-graphs > .panel.panel-default:first-child > .panel-heading {
+    background: linear-gradient(180deg, var(--lnms-surface-muted) 0%, var(--lnms-surface) 100%);
+}
+
+.lnms-device-graphs__heading {
+    font-weight: 700;
+    color: var(--lnms-text);
+    letter-spacing: 0.02em;
+}
+
+.lnms-device-graphs__sep {
+    color: var(--lnms-text-muted);
+    margin: 0 4px;
+}
+
+.lnms-device-graphs > .panel.panel-default:first-child > .panel-heading a {
+    color: var(--lnms-accent);
+    text-decoration: none;
+    padding: 2px 6px;
+    border-radius: var(--lnms-radius-sm);
+}
+
+.lnms-device-graphs > .panel.panel-default:first-child > .panel-heading a:hover,
+.lnms-device-graphs > .panel.panel-default:first-child > .panel-heading a:focus {
+    color: var(--lnms-accent-hover);
+    background-color: var(--lnms-accent-muted);
+    text-decoration: none;
+}
+
+.lnms-device-graphs .pagemenu-selected,
+.lnms-device-graphs .pagemenu-selected a {
+    color: var(--lnms-text) !important;
+    font-weight: 700;
+    background-color: var(--lnms-accent-muted);
+    border-radius: var(--lnms-radius-sm);
+    padding: 2px 6px;
+}
+
+.lnms-device-graphs > .panel.panel-default > .panel-heading .panel-title {
+    margin: 0;
+    font-size: var(--lnms-text-sm);
+    font-weight: 600;
+    color: var(--lnms-text);
+}
+
+.lnms-device-graphs > .panel.panel-default > .panel-body {
+    background-color: var(--lnms-surface-muted);
+    padding: var(--lnms-space-3);
+}
+
+.lnms-device-graphs .panel-body .row {
+    margin-left: 0;
+    margin-right: 0;
+}
+
+.lnms-device-graphs img,
+.lnms-device-graphs .graph-image,
+.lnms-device-graphs .minigraph-image {
+    display: block;
+    max-width: 100%;
+    height: auto;
+    border-radius: var(--lnms-radius-sm);
+    background-color: #ffffff;
+    border: 1px solid var(--lnms-border);
+}
+
+.dark .lnms-device-graphs img,
+.dark .lnms-device-graphs .graph-image,
+.dark .lnms-device-graphs .minigraph-image {
+    background-color: #111820;
+    border-color: var(--lnms-border);
+}
+
 /* Phase 5: Health — hosts .lnms-health*; Bootgrid sensor tables preserved */
 .lnms-health .lnms-health-panel.panel {
     background-color: var(--lnms-surface);

@@ -9,11 +9,11 @@ $link_array = [
 
 $bg = '#ffffff';
 
-echo '<div style="clear: both;">';
+echo '<div class="lnms-device-graphs">';
 
 print_optionbar_start();
 
-echo "<span style='font-weight: bold;'>Graphs</span> &#187; ";
+echo '<span class="lnms-device-graphs__heading">Graphs</span> <span class="lnms-device-graphs__sep" aria-hidden="true">&#187;</span> ';
 
 $graph_enable = [];
 foreach (dbFetchRows('SELECT * FROM device_graphs WHERE device_id = ? ORDER BY graph', [$device['device_id']]) as $graph) {
@@ -81,4 +81,7 @@ if (($group != 'customoid') && is_file("includes/html/pages/device/graphs/$group
         }
     }
 }
+
+echo '</div>';
+
 $pagetitle[] = 'Graphs';
