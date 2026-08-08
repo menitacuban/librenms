@@ -25,40 +25,49 @@
 <script type="text/javascript">
     $(document).ready(function () {
 
+        var isDark = document.documentElement.classList.contains('dark')
+            || document.body.classList.contains('dark');
+        var gaugeOpts = {
+            relativeGaugeSize: true,
+            gaugeWidthScale: 0.55,
+            levelColors: ['#3DCF7A', '#E6B84D', '#F07178'],
+            gaugeColor: isDark ? '#1A2740' : '#D9E2EA',
+            valueFontColor: isDark ? '#F3F6FA' : '#1B242C',
+            labelFontColor: isDark ? '#8B9BB0' : '#5E6E7C',
+            counter: true,
+            decimals: 0,
+            startAnimationTime: 400,
+            refreshAnimationTime: 300,
+        };
+
         @if($showCpu ?? true)
-            new JustGage({
+            new JustGage(Object.assign({
                 id: "gauge-cpu-{{ $id }}",
                 value: {{ (float) ($cpu ?? 0) }},
                 min: 0,
                 max: 100,
-                symbol: '%',
-                relativeGaugeSize: true,
-                gaugeWidthScale: 0.6
-            });
+                symbol: '%'
+            }, gaugeOpts));
         @endif
 
         @foreach($mempools as $index => $mem)
-        new JustGage({
+        new JustGage(Object.assign({
             id: "gauge-mem-{{ $id }}-{{ $index }}",
             value: {{ (float) $mem['used'] }},
             min: 0,
             max: {{ (float) ($mem['total'] > 0 ? $mem['total'] : 100) }},
-            label: "{{ $mem['unit'] }}",
-            relativeGaugeSize: true,
-            gaugeWidthScale: 0.6
-        });
+            label: "{{ $mem['unit'] }}"
+        }, gaugeOpts));
         @endforeach
 
         @foreach($disks as $index => $disk)
-        new JustGage({
+        new JustGage(Object.assign({
             id: "gauge-disk-{{ $id }}-{{ $index }}",
             value: {{ (float) $disk['used'] }},
             min: 0,
             max: {{ (float) ($disk['total'] > 0 ? $disk['total'] : 100) }},
-            label: "{{ $disk['unit'] }}",
-            relativeGaugeSize: true,
-            gaugeWidthScale: 0.6
-        });
+            label: "{{ $disk['unit'] }}"
+        }, gaugeOpts));
         @endforeach
     });
 </script>
@@ -72,27 +81,31 @@
     }
 
     .gauge-title {
-        font-weight: bold;
+        font-weight: 600;
         font-size: 11px;
         line-height: 1.1;
         margin-top: 2px;
         margin-bottom: 2px !important;
         word-break: break-word;
         flex: 0 0 auto;
+        color: var(--lnms-text-secondary, #5A6A78);
     }
 
     /* Dark Mode Styling for JustGage SVG Elements */
-    .dark .gauge-container svg path[fill="#edebeb"] {
-        fill: #3e444c !important;
+    .dark .gauge-container svg path[fill="#edebeb"],
+    .dark .gauge-container svg path[fill="#D9E2EA"] {
+        fill: #1A2740 !important;
     }
 
     .dark .gauge-container svg text[fill="#010101"],
-    .dark .gauge-container svg text[fill="#000000"] {
-        fill: #f9fafb !important;
+    .dark .gauge-container svg text[fill="#000000"],
+    .dark .gauge-container svg text[fill="#1B242C"] {
+        fill: #F3F6FA !important;
     }
 
-    .dark .gauge-container svg text[fill="#b3b3b3"] {
-        fill: #9ca3af !important;
+    .dark .gauge-container svg text[fill="#b3b3b3"],
+    .dark .gauge-container svg text[fill="#5E6E7C"] {
+        fill: #8B9BB0 !important;
     }
 </style>
 </div>

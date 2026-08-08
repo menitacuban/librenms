@@ -249,6 +249,7 @@
     var serialization = @json($dash_config);
     var gridstack_state = 0;
     var grid;
+    var updatePosTimer = null;
 
     @if ($dashboard->dashboard_id > 0)
         var dashboard_id = {{ $dashboard->dashboard_id }};
@@ -256,36 +257,82 @@
         var dashboard_id = 0;
     @endif
 
+    function setDashboardEditMode(enabled) {
+        var $dash = $('.lnms-dashboard');
+        var $btn = $('.edit-dash-btn');
+        if (!grid) {
+            return;
+        }
+        if (enabled) {
+            grid.opts.alwaysShowResizeHandle = true;
+            grid.enableMove(true);
+            grid.enableResize(true);
+            gridstack_state = 1;
+            $('.fade-edit').fadeIn();
+            $dash.addClass('lnms-dash-editing');
+            $btn.attr('aria-pressed', 'true');
+            $btn.find('.lnms-dash-edit-label').text(@json(__('Done')));
+        } else {
+            grid.opts.alwaysShowResizeHandle = false;
+            grid.enableMove(false);
+            grid.enableResize(false);
+            gridstack_state = 0;
+            $('.fade-edit').fadeOut();
+            $dash.removeClass('lnms-dash-editing');
+            $btn.attr('aria-pressed', 'false');
+            $btn.find('.lnms-dash-edit-label').text(@json(trans('dashboard.buttons.edit')));
+        }
+    }
+
     // Vite loads GridStack as a deferred module; ensure it's available before running dashboard code.
     window.addEventListener('DOMContentLoaded', function () {
         $('[data-toggle="tooltip"]').tooltip();
         dashboard_collapse();
         grid = GridStack.init({
-            cellHeight: 100,
-            margin: 4,
+            cellHeight: 96,
+            margin: 8,
             minRow: 1,
             maxRow: 200,
             column: 20,
             float: false,
-            draggable: {handle: 'header, span'},
+            animate: true,
+            draggable: {handle: '.lnms-widget__header, .lnms-widget__title, header, span'},
             alwaysShowResizeHandle: false,
-            resizable: {handles: 'se,sw,ne,nw'},
-            disableOneColumnMode: true,
+            // Edges + corners so both width and height are easy to adjust in edit mode
+            resizable: {handles: 'e, se, s, sw, w'},
+            // Stack on narrow viewports; restore multi-column layout above breakpoint
+            disableOneColumnMode: false,
+            oneColumnSize: 768,
         }, '.grid-stack');
+        window.grid = grid;
 
         // load existing widgets (sorted by row/col like Gridster used to)
         serialization.sort((a, b) => (a.row - b.row) || (a.col - b.col)).forEach(widget_dom);
 
         // default to "view mode"
-        grid.enableMove(false);
-        grid.enableResize(false);
+        setDashboardEditMode(false);
 
         grid.on('change', function () {
+            if (gridstack_state == 1) {
+                updatePos(grid);
+            }
+        });
+
+        grid.on('dragstart', function (event, element) {
+            $(element).addClass('lnms-widget--dragging');
+        });
+        grid.on('dragstop', function (event, element) {
+            $(element).removeClass('lnms-widget--dragging');
             updatePos(grid);
+        });
+
+        grid.on('resizestart', function (event, element) {
+            $(element).addClass('lnms-widget--resizing');
         });
 
         grid.on('resizestop', function (event, element) {
             var $el = $(element);
+            $el.removeClass('lnms-widget--resizing');
             updatePos(grid);
             widget_reload($el.attr('id'), $el.data('type'));
             // Leaflet / custom maps that skip HTML reload still need a resize pass
@@ -313,27 +360,15 @@
 
     $(document).on('click','.edit-dash-btn', function(e) {
         e.preventDefault();
-        var $btn = $(this);
-        var $dash = $('.lnms-dashboard');
         if (gridstack_state == 0) {
-            grid.enableMove(true);
-            grid.enableResize(true);
-            gridstack_state = 1;
-            $('.fade-edit').fadeIn();
-            $dash.addClass('lnms-dash-editing');
-            $btn.attr('aria-pressed', 'true');
-            $btn.find('.lnms-dash-edit-label').text(@json(__('Done')));
+            setDashboardEditMode(true);
             dashboard_collapse('#edit_dash');
         }
         else {
-            grid.enableMove(false);
-            grid.enableResize(false);
-            gridstack_state = 0;
-            $('.fade-edit').fadeOut();
-            $dash.removeClass('lnms-dash-editing');
-            $btn.attr('aria-pressed', 'false');
-            $btn.find('.lnms-dash-edit-label').text(@json(trans('dashboard.buttons.edit')));
+            setDashboardEditMode(false);
             $('.dash-collapse').hide();
+            // Flush any pending layout save when leaving edit mode
+            updatePos(grid, true);
         }
     });
 
@@ -441,24 +476,37 @@
 
 
 
-    function updatePos(grid) {
+    function updatePos(gridInstance, immediate) {
         @if ($dashboard->dashboard_id > 0)
             var dashboard_id = {{ $dashboard->dashboard_id }};
         @else
             var dashboard_id = 0;
         @endif
 
-        if (dashboard_id > 0) {
-            var serialized = grid.save(false).map(function(item) {
-                var id = item.id || (item.el ? item.el.getAttribute('id') : undefined);
+        var run = function () {
+            updatePosTimer = null;
+            if (!gridInstance || dashboard_id <= 0) {
+                return;
+            }
+            var serialized = gridInstance.save(false).map(function(item) {
+                var el = item.el || (item.id ? document.getElementById(item.id) : null);
+                var id = item.id || (el ? el.getAttribute('id') || el.getAttribute('gs-id') : undefined);
+                // Skip ephemeral / invalid rows (e.g. placeholder id 0)
+                var numericId = parseInt(id, 10);
+                if (!numericId || numericId <= 0) {
+                    return null;
+                }
                 return {
-                    id: id,
+                    id: numericId,
                     col: (item.x ?? 0) + 1,
                     row: (item.y ?? 0) + 1,
                     size_x: item.w ?? 1,
                     size_y: item.h ?? 1,
                 };
-            });
+            }).filter(Boolean);
+            if (!serialized.length) {
+                return;
+            }
             $.ajax({
                 type: 'PUT',
                 url: '{{ route('dashboard.widget.update', '?') }}'.replace('?', dashboard_id),
@@ -473,8 +521,22 @@
                     toastr.error(data.message);
                 }
             });
+        };
+
+        if (immediate) {
+            if (updatePosTimer) {
+                clearTimeout(updatePosTimer);
+                updatePosTimer = null;
+            }
+            run();
+            return;
         }
+        if (updatePosTimer) {
+            clearTimeout(updatePosTimer);
+        }
+        updatePosTimer = setTimeout(run, 120);
     }
+    window.updatePos = updatePos;
 
     function dashboard_collapse(target) {
         if (target !== undefined) {
@@ -483,10 +545,8 @@
             });
             $(target).fadeToggle(300);
             if (target != "#edit_dash") {
-                grid.enableMove(false);
-                grid.enableResize(false);
-                gridstack_state = 0;
-                $('.fade-edit').fadeOut();
+                // Opening new/delete panels exits interactive edit chrome
+                setDashboardEditMode(false);
             }
         } else {
             $('.dash-collapse').fadeOut(0);
@@ -789,7 +849,8 @@
         }
 
         setTimeout(function(){
-            if(!gridstack_state) {
+            if(!gridstack_state && grid) {
+                grid.opts.alwaysShowResizeHandle = false;
                 grid.enableMove(false);
                 grid.enableResize(false);
             }
