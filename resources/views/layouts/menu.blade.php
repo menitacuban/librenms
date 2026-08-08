@@ -181,6 +181,11 @@
     <div class="collapse navbar-collapse lnms-sidebar" id="navHeaderCollapse" style="max-height: calc(100vh - 50px)">
             <div class="lnms-sidebar__head">
                 <span class="lnms-sidebar__head-label">{{ __('Navigation') }}</span>
+                <button type="button" class="lnms-sidebar-close" id="lnms-sidebar-close"
+                        title="{{ __('Hide navigation') }}"
+                        aria-label="{{ __('Hide navigation') }}">
+                    <i class="fa fa-times" aria-hidden="true"></i>
+                </button>
             </div>
             <ul class="nav navbar-nav lnms-sidebar__menu">
 {{-- Overview --}}
@@ -1029,6 +1034,15 @@
         window.addEventListener('resize', repositionSearch);
         syncLnmsNavDropdownAria();
 
+        function setLnmsSidebarCollapsed(collapsed) {
+            document.body.classList.toggle('lnms-sidebar-collapsed', !!collapsed);
+            try {
+                localStorage.setItem('lnms-sidebar-collapsed', collapsed ? '1' : '0');
+            } catch (e) {}
+            syncLnmsSidebarToggle();
+            $(window).trigger('resize');
+        }
+
         try {
             if (localStorage.getItem('lnms-sidebar-collapsed') === '1') {
                 document.body.classList.add('lnms-sidebar-collapsed');
@@ -1036,14 +1050,8 @@
         } catch (e) {}
         syncLnmsSidebarToggle();
 
-        $('#lnms-sidebar-toggle').on('click', function () {
-            document.body.classList.toggle('lnms-sidebar-collapsed');
-            var collapsed = document.body.classList.contains('lnms-sidebar-collapsed');
-            try {
-                localStorage.setItem('lnms-sidebar-collapsed', collapsed ? '1' : '0');
-            } catch (e) {}
-            syncLnmsSidebarToggle();
-            $(window).trigger('resize');
+        $('#lnms-sidebar-toggle, #lnms-sidebar-close').on('click', function () {
+            setLnmsSidebarCollapsed(!document.body.classList.contains('lnms-sidebar-collapsed'));
         });
 
         // Position sidebar flyouts with fixed coordinates so overflow scroll does not clip them
