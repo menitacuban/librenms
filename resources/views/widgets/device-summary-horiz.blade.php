@@ -1,5 +1,48 @@
+@php
+    $devTotal = max(1, (int) ($devices['total'] ?? 0));
+    $devUp = (int) ($devices['up'] ?? 0);
+    $devDown = (int) ($devices['down'] ?? 0);
+    $devOther = max(0, (int) ($devices['total'] ?? 0) - $devUp - $devDown);
+    $portTotal = max(1, (int) ($ports['total'] ?? 0));
+    $portUp = (int) ($ports['up'] ?? 0);
+    $portDown = (int) ($ports['down'] ?? 0);
+    $portOther = max(0, (int) ($ports['total'] ?? 0) - $portUp - $portDown);
+@endphp
 <x-panel class="table-responsive lnms-device-summary tw:mb-0!">
     <x-slot name="table">
+     {{-- Real ObjectCache counts only — stacked bars for at-a-glance status --}}
+     <div class="lnms-device-summary__bars" role="group" aria-label="{{ __('Device and port status') }}">
+        <div class="lnms-device-summary__bar-row">
+            <a class="lnms-device-summary__bar-label" href="{{ route('devices') }}">{{ __('Devices') }}</a>
+            <div class="lnms-device-summary__bar" title="{{ __('Up') }} {{ $devUp }} / {{ __('Down') }} {{ $devDown }} / {{ __('Total') }} {{ $devices['total'] }}">
+                @if(($devices['total'] ?? 0) > 0)
+                    <span class="lnms-device-summary__seg lnms-device-summary__seg--up" style="width: {{ round(100 * $devUp / $devTotal, 2) }}%"></span>
+                    <span class="lnms-device-summary__seg lnms-device-summary__seg--down" style="width: {{ round(100 * $devDown / $devTotal, 2) }}%"></span>
+                    @if($devOther > 0)
+                        <span class="lnms-device-summary__seg lnms-device-summary__seg--other" style="width: {{ round(100 * $devOther / $devTotal, 2) }}%"></span>
+                    @endif
+                @else
+                    <span class="lnms-device-summary__seg lnms-device-summary__seg--empty" style="width: 100%"></span>
+                @endif
+            </div>
+            <span class="lnms-device-summary__bar-count">{{ $devUp }}/{{ $devices['total'] }}</span>
+        </div>
+        <div class="lnms-device-summary__bar-row">
+            <a class="lnms-device-summary__bar-label" href="{{ route('ports') }}">{{ __('Ports') }}</a>
+            <div class="lnms-device-summary__bar" title="{{ __('Up') }} {{ $portUp }} / {{ __('Down') }} {{ $portDown }} / {{ __('Total') }} {{ $ports['total'] }}">
+                @if(($ports['total'] ?? 0) > 0)
+                    <span class="lnms-device-summary__seg lnms-device-summary__seg--up" style="width: {{ round(100 * $portUp / $portTotal, 2) }}%"></span>
+                    <span class="lnms-device-summary__seg lnms-device-summary__seg--down" style="width: {{ round(100 * $portDown / $portTotal, 2) }}%"></span>
+                    @if($portOther > 0)
+                        <span class="lnms-device-summary__seg lnms-device-summary__seg--other" style="width: {{ round(100 * $portOther / $portTotal, 2) }}%"></span>
+                    @endif
+                @else
+                    <span class="lnms-device-summary__seg lnms-device-summary__seg--empty" style="width: 100%"></span>
+                @endif
+            </div>
+            <span class="lnms-device-summary__bar-count">{{ $portUp }}/{{ $ports['total'] }}</span>
+        </div>
+     </div>
      <table class="table table-hover table-condensed table-striped">
         <thead>
             <tr>

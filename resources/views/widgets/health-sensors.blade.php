@@ -1,7 +1,12 @@
 <div class="lnms-health-sensors">
 @if (!empty($error))
     <div class="lnms-widget-needs-config" data-widget-type="health-sensors">
-        <p class="lnms-widget-needs-config__msg">{{ $error }}</p>
+        <div class="lnms-widget-needs-config__icon" aria-hidden="true">
+            <i class="fa fa-heartbeat"></i>
+        </div>
+        <div class="lnms-widget-needs-config__copy">
+            <p class="lnms-widget-needs-config__msg">{{ $error }}</p>
+        </div>
     </div>
 @else
     @php($colWidth = max(1, min(12, intdiv(12, max(1, (int) ($cols ?? 3))))))
