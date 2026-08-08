@@ -21,14 +21,15 @@
                 </button>
             </div>
         </div>
-        <div class="lnms-topbar__end">
-            <div class="navbar-form navbar-right global-search tw:relative" x-data="globalSearch()"
+        <div class="lnms-topbar__center">
+            <div class="navbar-form navbar-right global-search lnms-topbar__search tw:relative" x-data="globalSearch()"
                  role="search" aria-label="{{ __('Global Search') }}"
                  @keydown.escape="close()" @click.outside="close()">
-                <div class="form-group">
+                <div class="form-group lnms-topbar__search-field">
                     <label class="sr-only" for="gsearch">{{ __('Global Search') }}</label>
+                    <i class="fa fa-search lnms-topbar__search-icon" aria-hidden="true"></i>
                     <input class="form-control" type="search" id="gsearch" name="gsearch" autocomplete="off"
-                           placeholder="{{ __('Type / to search') }}"
+                           placeholder="{{ __('Search devices, IPs, alerts...') }}"
                            role="combobox"
                            aria-autocomplete="list"
                            aria-controls="global-search-results"
@@ -38,6 +39,7 @@
                            x-model="query" x-ref="input"
                            @input.debounce.250ms="run()" @focus="open = flat.length > 0"
                            @keydown="onKey($event)">
+                    <kbd class="lnms-topbar__search-kbd" aria-hidden="true">/</kbd>
                 </div>
                 <div id="global-search-results" x-show="open" x-cloak
                      class="global-search-dropdown tw:absolute tw:right-0 tw:mt-1 tw:w-[50rem] tw:max-w-[90vw] tw:max-h-[70vh] tw:overflow-y-auto tw:bg-lnms-surface tw:border tw:border-lnms-border tw:rounded-lnms-md tw:shadow-lnms-sm tw:z-50"
@@ -75,14 +77,45 @@
                     </template>
                 </div>
             </div>
+        </div>
+        <div class="lnms-topbar__end">
             <ul class="nav navbar-nav navbar-right lnms-topbar__actions">
-                <li class="dropdown">
-                    <a href="#" class="dropdown-toggle" data-hover="dropdown" data-toggle="dropdown"
+                @can('device.create')
+                <li class="lnms-topbar__add-device">
+                    <a href="{{ url('addhost') }}" class="lnms-topbar__add-btn">
+                        <i class="fa fa-plus fa-fw" aria-hidden="true"></i>
+                        <span>{{ __('Add Device') }}</span>
+                    </a>
+                </li>
+                @endcan
+                <li class="lnms-topbar__notif">
+                    <a href="{{ url('notifications') }}" class="lnms-topbar__icon-btn"
+                       aria-label="{{ __('Notifications') }}{{ $notification_count ? ' (' . $notification_count . ')' : '' }}">
+                        <i class="fa fa-bell fa-fw fa-lg fa-nav-icons" aria-hidden="true"></i>
+                        @if($notification_count)
+                        <span class="badge badge-navbar-user count-notif badge-danger lnms-topbar__badge">{{ $notification_count }}</span>
+                        @endif
+                    </a>
+                </li>
+                <li class="lnms-topbar__theme-wrap" x-data="lnmsTopbarThemeToggle()">
+                    <button type="button" class="lnms-topbar__icon-btn lnms-topbar__theme-btn" @click="toggle()"
+                            :title="isDark ? '{{ __('Light Mode') }}' : '{{ __('Dark Mode') }}'"
+                            :aria-label="isDark ? '{{ __('Light Mode') }}' : '{{ __('Dark Mode') }}'">
+                        <i class="fa fa-fw fa-lg" :class="isDark ? 'fa-sun' : 'fa-moon'" aria-hidden="true"></i>
+                    </button>
+                </li>
+                <li class="dropdown lnms-topbar__user">
+                    <a href="#" class="dropdown-toggle lnms-topbar__user-chip" data-hover="dropdown" data-toggle="dropdown"
                        aria-haspopup="true" aria-expanded="false"
                        aria-label="{{ __('User') }}">
-                        <i class="fa fa-user fa-fw fa-lg fa-nav-icons" aria-hidden="true"></i>
-                        <span class="badge badge-navbar-user count-notif {{ $notification_count ? 'badge-danger' : 'badge-default' }}">{{ $notification_count ?: '' }}</span>
-                        <span class="lnms-topbar__user-label"><small>{{ Auth::user()->username }}</small></span>
+                        <span class="lnms-topbar__avatar" aria-hidden="true">{{ strtoupper(substr(Auth::user()->username, 0, 1)) }}</span>
+                        <span class="lnms-topbar__user-meta">
+                            <span class="lnms-topbar__user-name">{{ Auth::user()->username }}</span>
+                            @php($roleName = Auth::user()->getRoleNames()->first())
+                            @if($roleName)
+                            <span class="lnms-topbar__user-role">{{ $roleName }}</span>
+                            @endif
+                        </span>
                         <span class="visible-xs-inline-block">{{ __('User') }}</span>
                     </a>
                     <ul class="dropdown-menu dropdown-menu-right">
@@ -301,6 +334,10 @@
                                                                         aria-hidden="true"></i> {{ __('FDB Tables') }}</a>
                         </li>
                     </ul>
+                </li>
+{{-- Monitoring group (visual label only — items/permissions unchanged) --}}
+                <li class="lnms-nav-section" role="presentation" aria-hidden="true">
+                    <span class="lnms-nav-section__label">{{ __('Monitoring') }}</span>
                 </li>
 {{-- Devices --}}
             @if(! $no_devices_added || Gate::allows('create', \App\Models\Device::class))
@@ -656,6 +693,10 @@
                     </ul>
                 </li>
                 @endif
+{{-- Observe group (visual label only — items/permissions unchanged) --}}
+                <li class="lnms-nav-section" role="presentation" aria-hidden="true">
+                    <span class="lnms-nav-section__label">{{ __('Observe') }}</span>
+                </li>
 {{-- Wireless --}}
                 @can('viewAny', \App\Models\WirelessSensor::class)
                 @if($wireless_menu->isNotEmpty())
@@ -1160,5 +1201,28 @@
             }
         });
     })
+
+    function lnmsTopbarThemeToggle() {
+        return {
+            get isDark() {
+                return document.documentElement.classList.contains('dark')
+                    || document.body.classList.contains('dark');
+            },
+            toggle() {
+                var next = this.isDark ? 'light' : 'dark';
+                window.siteStylePreference = next;
+                fetch(@json(route('preferences.store')), {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                    },
+                    body: JSON.stringify({ pref: 'site_style', value: next })
+                }).then(function () {
+                    applySiteStyle(next);
+                });
+            }
+        };
+    }
 
 </script>

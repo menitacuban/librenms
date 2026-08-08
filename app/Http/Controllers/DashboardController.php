@@ -27,6 +27,7 @@
 namespace App\Http\Controllers;
 
 use App\Facades\LibrenmsConfig;
+use App\Models\AlertRule;
 use App\Models\Dashboard;
 use App\Models\User;
 use App\Models\UserPref;
@@ -37,6 +38,8 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Str;
+use LibreNMS\Util\ObjectCache;
+use Throwable;
 
 class DashboardController extends Controller
 {
@@ -149,7 +152,67 @@ class DashboardController extends Controller
             'shared_dashboards' => $shared_dashboards,
             'widgets' => $widgets,
             'user_list' => $user_list,
+            'kpi' => $this->dashboardKpis($user),
         ]);
+    }
+
+    /**
+     * Real summary KPIs for the dashboard strip (device access scoped).
+     * "Devices up" is devices up % — not a fake network-wide uptime SLA.
+     *
+     * @return array{
+     *     devices_total: int,
+     *     devices_up: int,
+     *     devices_down: int,
+     *     devices_up_pct: float|null,
+     *     network_status: string,
+     *     alerts: array{critical: int, warning: int, ok: int},
+     *     alerts_total: int
+     * }
+     */
+    private function dashboardKpis(User $user): array
+    {
+        $devices = ObjectCache::deviceCounts(['total', 'up', 'down']);
+        $total = (int) ($devices['total'] ?? 0);
+        $up = (int) ($devices['up'] ?? 0);
+        $down = (int) ($devices['down'] ?? 0);
+        $devicesUpPct = $total > 0 ? round(($up / $total) * 100, 1) : null;
+
+        $alertSeverities = [
+            'critical' => 0,
+            'warning' => 0,
+            'ok' => 0,
+        ];
+
+        try {
+            $counts = AlertRule::query()
+                ->selectRaw('alert_rules.severity, COUNT(*) as aggregate')
+                ->isActive()
+                ->hasAccess($user)
+                ->leftJoin('devices', 'alerts.device_id', '=', 'devices.device_id')
+                ->where('devices.disabled', '=', '0')
+                ->where('devices.ignore', '=', '0')
+                ->groupBy('alert_rules.severity')
+                ->pluck('aggregate', 'severity');
+
+            foreach (array_keys($alertSeverities) as $severity) {
+                if (isset($counts[$severity])) {
+                    $alertSeverities[$severity] = (int) $counts[$severity];
+                }
+            }
+        } catch (Throwable) {
+            // Keep zero counts if alert tables are unavailable.
+        }
+
+        return [
+            'devices_total' => $total,
+            'devices_up' => $up,
+            'devices_down' => $down,
+            'devices_up_pct' => $devicesUpPct,
+            'network_status' => $down === 0 ? 'healthy' : 'degraded',
+            'alerts' => $alertSeverities,
+            'alerts_total' => array_sum($alertSeverities),
+        ];
     }
 
     public function store(Request $request): JsonResponse

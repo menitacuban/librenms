@@ -7,6 +7,12 @@
 @include('alerts.modals.ack')
 @include('alerts.modals.notes')
 @if (!$bare)
+<div class="lnms-dash-hero">
+    <div class="lnms-dash-hero__text">
+        <h1 class="lnms-dash-hero__title">{{ $dashboard->dashboard_name }}</h1>
+        <p class="lnms-dash-hero__subtitle">{{ __('Real-time network health and alerts at a glance') }}</p>
+    </div>
+</div>
 <div class="row collapse @if(!$hide_dashboard_editor)in @endif lnms-dash-shell" id="dashboard-editor">
     <div class="col-md-12 tw:pl-0!">
         <div class="lnms-dash-viewbar" role="group" aria-label="{{ trans('dashboard.title') }}">
@@ -172,6 +178,60 @@
         </div>{{-- /.lnms-dash-manage --}}
     </div>
 </div>
+@isset($kpi)
+<section class="lnms-dash-kpi" aria-label="{{ __('Network summary') }}">
+    <article class="lnms-dash-kpi__card lnms-dash-kpi__card--status">
+        <div class="lnms-dash-kpi__icon" aria-hidden="true"><i class="fa fa-heartbeat"></i></div>
+        <div class="lnms-dash-kpi__body">
+            <h2 class="lnms-dash-kpi__label">{{ __('Network Status') }}</h2>
+            @if ($kpi['network_status'] === 'healthy')
+                <p class="lnms-dash-kpi__value lnms-dash-kpi__value--up">{{ __('Healthy') }}</p>
+                <p class="lnms-dash-kpi__meta">{{ __('All systems operational.') }}</p>
+            @else
+                <p class="lnms-dash-kpi__value lnms-dash-kpi__value--down">{{ __('Degraded') }}</p>
+                <p class="lnms-dash-kpi__meta">{{ __(':count device(s) down', ['count' => $kpi['devices_down']]) }}</p>
+            @endif
+        </div>
+    </article>
+    <article class="lnms-dash-kpi__card">
+        <div class="lnms-dash-kpi__icon" aria-hidden="true"><i class="fa fa-server"></i></div>
+        <div class="lnms-dash-kpi__body">
+            <h2 class="lnms-dash-kpi__label">{{ __('Total Devices') }}</h2>
+            <p class="lnms-dash-kpi__value">{{ number_format($kpi['devices_total']) }}</p>
+            <p class="lnms-dash-kpi__meta">
+                <span class="lnms-dash-kpi__chip lnms-dash-kpi__chip--up">{{ number_format($kpi['devices_up']) }} {{ __('Up') }}</span>
+                <span class="lnms-dash-kpi__chip lnms-dash-kpi__chip--down">{{ number_format($kpi['devices_down']) }} {{ __('Down') }}</span>
+            </p>
+        </div>
+    </article>
+    <article class="lnms-dash-kpi__card">
+        <div class="lnms-dash-kpi__icon" aria-hidden="true"><i class="fa fa-bell"></i></div>
+        <div class="lnms-dash-kpi__body">
+            <h2 class="lnms-dash-kpi__label">{{ __('Active Alerts') }}</h2>
+            <p class="lnms-dash-kpi__value">{{ number_format($kpi['alerts_total']) }}</p>
+            <p class="lnms-dash-kpi__meta">
+                <span class="lnms-dash-kpi__chip lnms-dash-kpi__chip--critical">{{ number_format($kpi['alerts']['critical']) }} {{ __('Critical') }}</span>
+                <span class="lnms-dash-kpi__chip lnms-dash-kpi__chip--warn">{{ number_format($kpi['alerts']['warning']) }} {{ __('Warning') }}</span>
+                <span class="lnms-dash-kpi__chip lnms-dash-kpi__chip--up">{{ number_format($kpi['alerts']['ok']) }} {{ __('OK') }}</span>
+            </p>
+        </div>
+    </article>
+    <article class="lnms-dash-kpi__card">
+        <div class="lnms-dash-kpi__icon" aria-hidden="true"><i class="fa fa-line-chart"></i></div>
+        <div class="lnms-dash-kpi__body">
+            <h2 class="lnms-dash-kpi__label">{{ __('Devices up') }}</h2>
+            <p class="lnms-dash-kpi__value">
+                @if ($kpi['devices_up_pct'] === null)
+                    —
+                @else
+                    {{ $kpi['devices_up_pct'] }}%
+                @endif
+            </p>
+            <p class="lnms-dash-kpi__meta">{{ __('Share of accessible devices currently up') }}</p>
+        </div>
+    </article>
+</section>
+@endisset
 @endif
 <span class="message" id="message"></span>
 <div class="grid-stack"></div>
@@ -563,20 +623,20 @@
     }
 
     function widget_dom(data) {
+        var actions = '';
+        @if (
+                ($dashboard->access == 1 && Auth::id() === $dashboard->user_id) ||
+                ($dashboard->access == 0 || $dashboard->access >= 2)
+            )
+            actions += '<button type="button" class="lnms-widget__action" data-widget-action="edit" data-widget-id="'+data.user_widget_id+'" title=' + @json(trans('dashboard.buttons.edit')) + ' aria-label=' + @json(trans('dashboard.buttons.edit')) + '><i class="fa fa-pencil-square-o" aria-hidden="true"></i></button>';
+        @endif
+        actions += '<button type="button" class="lnms-widget__action lnms-widget__action--danger" data-widget-action="close" data-widget-id="'+data.user_widget_id+'" title=' + @json(__('Remove')) + ' aria-label=' + @json(__('Remove')) + '><i class="fa fa-times" aria-hidden="true"></i></button>';
+
         dom = '<div id="'+data.user_widget_id+'" class="grid-stack-item" data-type="'+data.widget+'" data-settings="0" gs-id="'+data.user_widget_id+'">'+
               '<div class="grid-stack-item-content lnms-widget tw:left-0! tw:bottom-0!">'+
               '<header class="lnms-widget__header"><span id="widget_title_'+data.user_widget_id+'" class="dashboard-widget-title lnms-widget__title">'+data.title+
               '</span><span id="widget_title_counter_'+data.user_widget_id+'"></span>'+
-              '<span class="fade-edit tw:float-right">'+
-
-                @if (
-                        ($dashboard->access == 1 && Auth::id() === $dashboard->user_id) ||
-                        ($dashboard->access == 0 || $dashboard->access >= 2)
-                    )
-                        '<i class="fa fa-pencil-square-o tw:cursor-pointer tw:me-2 tw:pl-2" data-widget-action="edit" data-widget-id="'+data.user_widget_id+'" data-toggle="tooltip" data-placement="top">&nbsp;</i>&nbsp;'+
-                @endif
-              '<i class="fa fa-lg fa-times tw:cursor-pointer tw:me-2" data-widget-action="close" data-widget-id="'+data.user_widget_id+'" data-toggle="tooltip" data-placement="top">&nbsp;</i>&nbsp;'+
-              '</span>'+
+              '<div class="fade-edit lnms-widget__actions">'+actions+'</div>'+
               '</header>'+
               '<div class="lnms-widget__body" id="widget_body_'+data.user_widget_id+'">'+data.widget+'</div>'+
               '</div></div>';
