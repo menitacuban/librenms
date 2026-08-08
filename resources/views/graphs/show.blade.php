@@ -27,6 +27,7 @@
     </x-slot:heading>
 </x-panel>
 
+<div class="lnms-graphs-workspace">
 <div id="period-thumbs" class="lnms-graphs-thumbs tw:overflow-x-auto tw:scroll-px-2 tw:pb-2 tw:dark:scheme-dark">
     <div class="lnms-graphs-thumbs__row tw:flex tw:flex-nowrap tw:gap-1">
     @foreach ($periodThumbs as $thumb)
@@ -48,7 +49,8 @@
     </div>
 </div>
 
-<div class="lnms-graphs-daterange tw:w-[48ch] tw:max-w-full tw:mx-auto tw:mt-3 tw:mb-2">
+<div class="lnms-graphs-controls">
+<div class="lnms-graphs-daterange tw:w-[48ch] tw:max-w-full tw:mx-auto">
     <x-date-range-picker :start="$graphFrom" :end="$graphTo" :reload="true"
                          class="lnms-graphs-daterange__control tw:w-full tw:text-center tw:px-3 tw:py-2 tw:border tw:rounded-md"></x-date-range-picker>
 </div>
@@ -59,8 +61,9 @@
     @endforeach
     @if ($trendHint) <span class="lnms-graphs-toggles__sep" aria-hidden="true">|</span> <span class="lnms-graphs-toggles__hint">{{ __('To show trend, set to future date') }}</span> @endif
 </div>
+</div>
 
-<div class="lnms-graphs-main tw:w-full tw:mt-4">
+<div class="lnms-graphs-main tw:w-full">
 @if ($isDynamicGraph)
     <img class="graph graph-image img-responsive tw:w-full tw:h-auto tw:border-0" data-src-template="{{ $dynamicGraphSrcTemplate }}" fetchpriority="high" />
 @else
@@ -68,6 +71,7 @@
          src="{{ route('graph', $mainGraphVars) }}"
          fetchpriority="high" />
 @endif
+</div>
 </div>
 
 @isset($graphDescr)
