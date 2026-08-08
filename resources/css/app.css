@@ -77,6 +77,12 @@
     --lnms-sidebar-width: 232px;
     /* Fully hidden when toggled (not an icon rail) */
     --lnms-sidebar-collapsed-width: 0px;
+
+    /* Visual-pass control metrics */
+    --lnms-control-height: 34px;
+    --lnms-control-height-sm: 30px;
+    --lnms-elevation-1: var(--lnms-shadow-sm);
+    --lnms-elevation-2: var(--lnms-shadow-md);
 }
 
 .dark {
@@ -302,6 +308,559 @@ body.lnms-shell .lnms-a11y-readable {
     top: var(--lnms-space-2);
     outline: 2px solid var(--lnms-focus-ring);
     outline-offset: 2px;
+}
+
+/*
+ * —— Visual Pass Wave 1: global shell bridges ——
+ * CSS-first overrides under body.lnms-shell so Bootstrap / Bootgrid / Select2
+ * stop reading as stock admin UI. Preserve IDs, data-column-id, data-toggle,
+ * Bootgrid AJAX, Select2 hooks, routes, and permissions.
+ */
+
+/* 1) Panels → quiet modern surfaces */
+body.lnms-shell .panel,
+body.lnms-shell .panel-default {
+    background-color: var(--lnms-surface) !important;
+    border: 1px solid var(--lnms-border) !important;
+    border-radius: var(--lnms-radius-lg) !important;
+    box-shadow: var(--lnms-elevation-1) !important;
+    color: var(--lnms-text);
+    overflow: hidden;
+}
+
+body.lnms-shell .panel-heading,
+body.lnms-shell .panel-default > .panel-heading {
+    background: var(--lnms-surface-muted) !important;
+    border-bottom: 1px solid var(--lnms-border) !important;
+    border-radius: 0 !important;
+    color: var(--lnms-text) !important;
+    padding: var(--lnms-space-3) var(--lnms-space-4) !important;
+    font-family: var(--lnms-font-sans);
+    font-size: var(--lnms-text-sm);
+    font-weight: 600;
+}
+
+body.lnms-shell .panel-title {
+    color: var(--lnms-text) !important;
+    font-size: var(--lnms-text-md) !important;
+    font-weight: 600 !important;
+    margin: 0 !important;
+}
+
+body.lnms-shell .panel-body {
+    background-color: var(--lnms-surface) !important;
+    color: var(--lnms-text);
+    padding: var(--lnms-space-4) !important;
+}
+
+body.lnms-shell .panel-footer {
+    background-color: var(--lnms-surface-muted) !important;
+    border-top: 1px solid var(--lnms-border) !important;
+    color: var(--lnms-text-secondary);
+    padding: var(--lnms-space-3) var(--lnms-space-4) !important;
+}
+
+body.lnms-shell .panel-condensed > .panel-heading,
+body.lnms-shell .panel-condensed > .panel-body,
+body.lnms-shell .panel-condensed > .panel-footer {
+    padding: var(--lnms-space-2) var(--lnms-space-3) !important;
+}
+
+/* 2) Buttons */
+body.lnms-shell .btn {
+    font-family: var(--lnms-font-sans);
+    font-size: var(--lnms-text-sm);
+    font-weight: 500;
+    line-height: 1.25;
+    border-radius: var(--lnms-radius-sm) !important;
+    min-height: var(--lnms-control-height-sm);
+    padding: 6px 12px;
+    box-shadow: none !important;
+    transition: background-color var(--lnms-duration-fast) var(--lnms-ease),
+        border-color var(--lnms-duration-fast) var(--lnms-ease),
+        color var(--lnms-duration-fast) var(--lnms-ease);
+}
+
+body.lnms-shell .btn-default,
+body.lnms-shell .btn-secondary {
+    background-color: var(--lnms-surface) !important;
+    border-color: var(--lnms-border) !important;
+    color: var(--lnms-text) !important;
+}
+
+body.lnms-shell .btn-default:hover,
+body.lnms-shell .btn-default:focus,
+body.lnms-shell .btn-secondary:hover,
+body.lnms-shell .btn-secondary:focus {
+    background-color: var(--lnms-surface-muted) !important;
+    border-color: var(--lnms-border-strong) !important;
+    color: var(--lnms-text) !important;
+}
+
+body.lnms-shell .btn-primary,
+body.lnms-shell .btn-success {
+    background-color: var(--lnms-accent) !important;
+    border-color: var(--lnms-accent) !important;
+    color: #fff !important;
+}
+
+body.lnms-shell .btn-primary:hover,
+body.lnms-shell .btn-primary:focus,
+body.lnms-shell .btn-success:hover,
+body.lnms-shell .btn-success:focus {
+    background-color: var(--lnms-accent-hover) !important;
+    border-color: var(--lnms-accent-hover) !important;
+    color: #fff !important;
+}
+
+body.lnms-shell .btn-danger {
+    background-color: var(--lnms-status-down) !important;
+    border-color: var(--lnms-status-down) !important;
+    color: #fff !important;
+}
+
+body.lnms-shell .btn-warning {
+    background-color: var(--lnms-status-warn) !important;
+    border-color: var(--lnms-status-warn) !important;
+    color: #1b242c !important;
+}
+
+body.lnms-shell .btn-info {
+    background-color: var(--lnms-status-maintenance) !important;
+    border-color: var(--lnms-status-maintenance) !important;
+    color: #fff !important;
+}
+
+body.lnms-shell .btn-link {
+    color: var(--lnms-accent) !important;
+    background: transparent !important;
+    border-color: transparent !important;
+}
+
+body.lnms-shell .btn .caret {
+    border-top-color: currentColor;
+    margin-left: 4px;
+}
+
+/* 3) Forms */
+body.lnms-shell .form-control,
+body.lnms-shell input.form-control,
+body.lnms-shell select.form-control,
+body.lnms-shell textarea.form-control {
+    height: var(--lnms-control-height);
+    min-height: var(--lnms-control-height);
+    padding: 6px 10px;
+    font-family: var(--lnms-font-sans);
+    font-size: var(--lnms-text-sm);
+    color: var(--lnms-text) !important;
+    background-color: var(--lnms-surface) !important;
+    border: 1px solid var(--lnms-border) !important;
+    border-radius: var(--lnms-radius-sm) !important;
+    box-shadow: none !important;
+}
+
+body.lnms-shell textarea.form-control {
+    height: auto;
+    min-height: 72px;
+}
+
+body.lnms-shell .form-control:focus {
+    border-color: var(--lnms-accent) !important;
+    box-shadow: 0 0 0 3px var(--lnms-focus-ring) !important;
+}
+
+body.lnms-shell .form-control::placeholder {
+    color: var(--lnms-text-muted);
+    opacity: 1;
+}
+
+body.lnms-shell .input-sm,
+body.lnms-shell .form-control.input-sm {
+    height: var(--lnms-control-height-sm);
+    min-height: var(--lnms-control-height-sm);
+    padding: 4px 8px;
+    font-size: var(--lnms-text-xs);
+}
+
+body.lnms-shell .help-block,
+body.lnms-shell .form-text {
+    color: var(--lnms-text-muted);
+    font-size: var(--lnms-text-xs);
+}
+
+body.lnms-shell .has-error .form-control,
+body.lnms-shell .form-control.is-invalid {
+    border-color: var(--lnms-status-down) !important;
+}
+
+body.lnms-shell .has-success .form-control {
+    border-color: var(--lnms-status-up) !important;
+}
+
+body.lnms-shell .checkbox label,
+body.lnms-shell .radio label,
+body.lnms-shell .form-check-label {
+    color: var(--lnms-text);
+    font-weight: 400;
+}
+
+/* 4) Status labels / chips (keep class names for JS formatters) */
+body.lnms-shell .label,
+body.lnms-shell span.label {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-family: var(--lnms-font-sans);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    line-height: 1.2;
+    padding: 3px 8px !important;
+    border-radius: var(--lnms-radius-sm) !important;
+    border: 1px solid transparent;
+    text-shadow: none !important;
+    box-shadow: none !important;
+}
+
+body.lnms-shell .label-success {
+    background-color: color-mix(in srgb, var(--lnms-status-up) 18%, var(--lnms-surface)) !important;
+    color: var(--lnms-status-up) !important;
+    border-color: color-mix(in srgb, var(--lnms-status-up) 45%, var(--lnms-border)) !important;
+}
+
+body.lnms-shell .label-danger {
+    background-color: color-mix(in srgb, var(--lnms-status-down) 16%, var(--lnms-surface)) !important;
+    color: var(--lnms-status-down) !important;
+    border-color: color-mix(in srgb, var(--lnms-status-down) 45%, var(--lnms-border)) !important;
+}
+
+body.lnms-shell .label-warning {
+    background-color: color-mix(in srgb, var(--lnms-status-warn) 18%, var(--lnms-surface)) !important;
+    color: var(--lnms-status-warn) !important;
+    border-color: color-mix(in srgb, var(--lnms-status-warn) 45%, var(--lnms-border)) !important;
+}
+
+body.lnms-shell .label-info,
+body.lnms-shell .label-primary {
+    background-color: color-mix(in srgb, var(--lnms-status-maintenance) 18%, var(--lnms-surface)) !important;
+    color: var(--lnms-status-maintenance) !important;
+    border-color: color-mix(in srgb, var(--lnms-status-maintenance) 45%, var(--lnms-border)) !important;
+}
+
+body.lnms-shell .label-default {
+    background-color: var(--lnms-surface-muted) !important;
+    color: var(--lnms-text-secondary) !important;
+    border-color: var(--lnms-border) !important;
+}
+
+body.lnms-shell .alert-status {
+    border-radius: var(--lnms-radius-sm);
+    border-width: 0 0 0 3px !important;
+    border-style: solid !important;
+    background-color: var(--lnms-surface-muted) !important;
+}
+
+body.lnms-shell .alert-status.label-success,
+body.lnms-shell .label-success.alert-status {
+    border-left-color: var(--lnms-status-up) !important;
+}
+
+body.lnms-shell .alert-status.label-danger,
+body.lnms-shell .label-danger.alert-status {
+    border-left-color: var(--lnms-status-down) !important;
+}
+
+body.lnms-shell .alert-status.label-warning,
+body.lnms-shell .label-warning.alert-status {
+    border-left-color: var(--lnms-status-warn) !important;
+}
+
+body.lnms-shell .badge {
+    font-family: var(--lnms-font-sans);
+    font-weight: 600;
+    border-radius: var(--lnms-radius-sm) !important;
+    background-color: var(--lnms-accent) !important;
+}
+
+/* 5) Tables */
+body.lnms-shell .table {
+    color: var(--lnms-text);
+    font-family: var(--lnms-font-sans);
+    font-size: var(--lnms-text-sm);
+    background-color: transparent;
+}
+
+body.lnms-shell .table > thead > tr > th,
+body.lnms-shell .bootgrid-table th {
+    background-color: var(--lnms-surface-muted) !important;
+    color: var(--lnms-text-secondary) !important;
+    font-size: var(--lnms-text-xs);
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    border-bottom: 1px solid var(--lnms-border) !important;
+    border-top: none !important;
+    padding: 10px 12px !important;
+    vertical-align: middle;
+}
+
+body.lnms-shell .table > tbody > tr > td,
+body.lnms-shell .bootgrid-table td {
+    border-top-color: var(--lnms-border) !important;
+    padding: 10px 12px !important;
+    vertical-align: middle;
+    color: var(--lnms-text);
+}
+
+body.lnms-shell .table-striped > tbody > tr:nth-of-type(odd),
+body.lnms-shell .bootgrid-table.table-striped > tbody > tr:nth-of-type(odd) {
+    background-color: color-mix(in srgb, var(--lnms-surface-muted) 55%, transparent) !important;
+}
+
+body.lnms-shell .table-hover > tbody > tr:hover,
+body.lnms-shell .bootgrid-table > tbody > tr:hover {
+    background-color: var(--lnms-accent-muted) !important;
+}
+
+body.lnms-shell .table-condensed > tbody > tr > td,
+body.lnms-shell .table-condensed > thead > tr > th {
+    padding: 8px 10px !important;
+}
+
+/* 6) Bootgrid chrome */
+body.lnms-shell .bootgrid-header,
+body.lnms-shell .bootgrid-footer {
+    background: transparent !important;
+    border: none !important;
+    padding: 0 0 var(--lnms-space-3) !important;
+    font-family: var(--lnms-font-sans);
+    color: var(--lnms-text-secondary);
+}
+
+body.lnms-shell .bootgrid-footer {
+    padding: var(--lnms-space-3) 0 0 !important;
+}
+
+body.lnms-shell .bootgrid-header .search .search-field,
+body.lnms-shell .bootgrid-footer .search .search-field {
+    height: var(--lnms-control-height-sm) !important;
+    border: 1px solid var(--lnms-border) !important;
+    border-radius: var(--lnms-radius-sm) !important;
+    background: var(--lnms-surface) !important;
+    color: var(--lnms-text) !important;
+    box-shadow: none !important;
+    font-size: var(--lnms-text-sm);
+}
+
+body.lnms-shell .bootgrid-header .search .search-field:focus,
+body.lnms-shell .bootgrid-footer .search .search-field:focus {
+    border-color: var(--lnms-accent) !important;
+    box-shadow: 0 0 0 3px var(--lnms-focus-ring) !important;
+}
+
+body.lnms-shell .bootgrid-header .actionBar .btn,
+body.lnms-shell .bootgrid-footer .actionBar .btn,
+body.lnms-shell .bootgrid-header .actions .btn-group .btn {
+    background: var(--lnms-surface) !important;
+    border-color: var(--lnms-border) !important;
+    color: var(--lnms-text-secondary) !important;
+}
+
+body.lnms-shell .bootgrid-header .actionBar .btn:hover,
+body.lnms-shell .bootgrid-footer .actionBar .btn:hover,
+body.lnms-shell .bootgrid-header .actions .btn-group .btn:hover {
+    background: var(--lnms-surface-muted) !important;
+    color: var(--lnms-text) !important;
+}
+
+body.lnms-shell .bootgrid-table {
+    border: 1px solid var(--lnms-border) !important;
+    border-radius: var(--lnms-radius-md);
+    overflow: hidden;
+    background: var(--lnms-surface);
+}
+
+body.lnms-shell .bootgrid-table td.loading,
+body.lnms-shell .bootgrid-table td.no-results {
+    color: var(--lnms-text-muted) !important;
+    background: transparent !important;
+    font-weight: 400;
+    padding: var(--lnms-space-4) !important;
+}
+
+body.lnms-shell .bootgrid-footer .infos {
+    color: var(--lnms-text-muted);
+    font-size: var(--lnms-text-xs);
+}
+
+body.lnms-shell .pagination > li > a,
+body.lnms-shell .pagination > li > span,
+body.lnms-shell .bootgrid-footer .pagination > li > a,
+body.lnms-shell .bootgrid-footer .pagination > li > span {
+    background: var(--lnms-surface) !important;
+    border-color: var(--lnms-border) !important;
+    color: var(--lnms-text) !important;
+    border-radius: var(--lnms-radius-sm) !important;
+    margin: 0 2px;
+    min-width: 32px;
+    text-align: center;
+}
+
+body.lnms-shell .pagination > .active > a,
+body.lnms-shell .pagination > .active > span,
+body.lnms-shell .bootgrid-footer .pagination > .active > a,
+body.lnms-shell .bootgrid-footer .pagination > .active > span {
+    background: var(--lnms-accent) !important;
+    border-color: var(--lnms-accent) !important;
+    color: #fff !important;
+}
+
+body.lnms-shell .pagination > li > a:hover,
+body.lnms-shell .bootgrid-footer .pagination > li > a:hover {
+    background: var(--lnms-surface-muted) !important;
+    border-color: var(--lnms-border-strong) !important;
+    color: var(--lnms-text) !important;
+}
+
+/* 7) Select2 */
+body.lnms-shell .select2-container .select2-selection--single {
+    height: var(--lnms-control-height) !important;
+    border: 1px solid var(--lnms-border) !important;
+    border-radius: var(--lnms-radius-sm) !important;
+    background-color: var(--lnms-surface) !important;
+}
+
+body.lnms-shell .select2-container--default .select2-selection--single .select2-selection__rendered {
+    line-height: calc(var(--lnms-control-height) - 2px) !important;
+    color: var(--lnms-text) !important;
+    padding-left: 10px;
+    font-size: var(--lnms-text-sm);
+}
+
+body.lnms-shell .select2-container--default .select2-selection--single .select2-selection__arrow {
+    height: calc(var(--lnms-control-height) - 2px) !important;
+}
+
+body.lnms-shell .select2-container--default.select2-container--focus .select2-selection--single,
+body.lnms-shell .select2-container--default.select2-container--open .select2-selection--single,
+body.lnms-shell .select2-container--default.select2-container--focus .select2-selection--multiple,
+body.lnms-shell .select2-container--default.select2-container--open .select2-selection--multiple {
+    border-color: var(--lnms-accent) !important;
+    box-shadow: 0 0 0 3px var(--lnms-focus-ring);
+}
+
+body.lnms-shell .select2-container .select2-selection--multiple {
+    min-height: var(--lnms-control-height) !important;
+    border: 1px solid var(--lnms-border) !important;
+    border-radius: var(--lnms-radius-sm) !important;
+    background-color: var(--lnms-surface) !important;
+}
+
+body.lnms-shell .select2-dropdown {
+    border: 1px solid var(--lnms-border) !important;
+    border-radius: var(--lnms-radius-md) !important;
+    background: var(--lnms-surface) !important;
+    box-shadow: var(--lnms-elevation-2);
+    overflow: hidden;
+}
+
+body.lnms-shell .select2-container--default .select2-results__option--highlighted[aria-selected],
+body.lnms-shell .select2-container--default .select2-results__option--highlighted[aria-selected=true] {
+    background-color: var(--lnms-accent-muted) !important;
+    color: var(--lnms-text) !important;
+}
+
+body.lnms-shell .select2-container--default .select2-results__option[aria-selected=true] {
+    background-color: var(--lnms-surface-muted) !important;
+    color: var(--lnms-text) !important;
+}
+
+body.lnms-shell .select2-search--dropdown .select2-search__field {
+    border: 1px solid var(--lnms-border) !important;
+    border-radius: var(--lnms-radius-sm) !important;
+    background: var(--lnms-surface) !important;
+    color: var(--lnms-text) !important;
+}
+
+/* 8) Tabs / dropdowns / modals / wells */
+body.lnms-shell .nav-tabs {
+    border-bottom-color: var(--lnms-border) !important;
+}
+
+body.lnms-shell .nav-tabs > li > a {
+    color: var(--lnms-text-secondary);
+    border-radius: var(--lnms-radius-sm) var(--lnms-radius-sm) 0 0 !important;
+    font-weight: 500;
+}
+
+body.lnms-shell .nav-tabs > li.active > a,
+body.lnms-shell .nav-tabs > li.active > a:hover,
+body.lnms-shell .nav-tabs > li.active > a:focus {
+    color: var(--lnms-text) !important;
+    background: var(--lnms-surface) !important;
+    border-color: var(--lnms-border) var(--lnms-border) var(--lnms-surface) !important;
+    font-weight: 600;
+}
+
+body.lnms-shell .dropdown-menu {
+    background: var(--lnms-surface) !important;
+    border: 1px solid var(--lnms-border) !important;
+    border-radius: var(--lnms-radius-md) !important;
+    box-shadow: var(--lnms-elevation-2) !important;
+    padding: var(--lnms-space-1) 0;
+}
+
+body.lnms-shell .dropdown-menu > li > a {
+    color: var(--lnms-text) !important;
+    font-size: var(--lnms-text-sm);
+    padding: 8px 14px;
+}
+
+body.lnms-shell .dropdown-menu > li > a:hover,
+body.lnms-shell .dropdown-menu > li > a:focus {
+    background: var(--lnms-accent-muted) !important;
+    color: var(--lnms-text) !important;
+}
+
+body.lnms-shell .modal-content {
+    background: var(--lnms-surface) !important;
+    border: 1px solid var(--lnms-border) !important;
+    border-radius: var(--lnms-radius-lg) !important;
+    box-shadow: var(--lnms-elevation-2) !important;
+    color: var(--lnms-text);
+}
+
+body.lnms-shell .modal-header,
+body.lnms-shell .modal-footer {
+    background: var(--lnms-surface-muted) !important;
+    border-color: var(--lnms-border) !important;
+}
+
+body.lnms-shell .modal-title {
+    color: var(--lnms-text);
+    font-weight: 600;
+}
+
+body.lnms-shell .well {
+    background: var(--lnms-surface-muted) !important;
+    border: 1px solid var(--lnms-border) !important;
+    border-radius: var(--lnms-radius-md) !important;
+    box-shadow: none !important;
+    color: var(--lnms-text);
+}
+
+body.lnms-shell .list-group-item {
+    background: var(--lnms-surface) !important;
+    border-color: var(--lnms-border) !important;
+    color: var(--lnms-text);
+}
+
+body.lnms-shell .list-group-item.active,
+body.lnms-shell .list-group-item.active:hover,
+body.lnms-shell .list-group-item.active:focus {
+    background: var(--lnms-accent-muted) !important;
+    border-color: var(--lnms-accent) !important;
+    color: var(--lnms-text) !important;
 }
 
 .lnms-content {
