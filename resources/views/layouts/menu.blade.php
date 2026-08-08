@@ -3,7 +3,9 @@
         <div class="lnms-topbar__start">
             <button type="button" class="lnms-sidebar-toggle" id="lnms-sidebar-toggle"
                     aria-controls="navHeaderCollapse" aria-expanded="true"
-                    title="{{ __('Toggle navigation') }}">
+                    title="{{ __('Hide navigation') }}"
+                    data-title-expanded="{{ __('Hide navigation') }}"
+                    data-title-collapsed="{{ __('Show navigation') }}">
                 <i class="fa fa-bars" aria-hidden="true"></i>
                 <span class="sr-only">{{ __('Toggle navigation') }}</span>
             </button>
@@ -1000,6 +1002,10 @@
         if (!toggle || !body) { return; }
         var collapsed = body.classList.contains('lnms-sidebar-collapsed');
         toggle.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
+        var title = collapsed
+            ? (toggle.getAttribute('data-title-collapsed') || 'Show navigation')
+            : (toggle.getAttribute('data-title-expanded') || 'Hide navigation');
+        toggle.setAttribute('title', title);
     }
 
     function syncLnmsNavDropdownAria() {
