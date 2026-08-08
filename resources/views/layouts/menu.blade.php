@@ -367,6 +367,10 @@
                         <li><a href="{{ url('addhost') }}"><i class="fa fa-plus fa-fw fa-lg"
                                                               aria-hidden="true"></i> {{ __('Add Device') }}</a></li>
                         @endcan
+                        @can('device.create')
+                        <li><a href="/scanner/" target="_blank"><i class="fa fa-wifi fa-fw fa-lg"
+                                                              aria-hidden="true"></i> {{ __('Escaner de red') }}</a></li>
+                        @endcan
                         @can('device.delete')
                         <li><a href="{{ route('device.delete') }}"><i class="fa fa-trash fa-fw fa-lg"
                                                               aria-hidden="true"></i> {{ __('Delete Device') }}</a></li>
